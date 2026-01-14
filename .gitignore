@@ -1,0 +1,4 @@
+.cache
+kbrowser
+*.o
+compile_commands.json
