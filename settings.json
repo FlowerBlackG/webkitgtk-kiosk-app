@@ -1,10 +1,10 @@
 {
-    "url":"https://www.youtube.com",
+    "url":"https://www.sysoul.com/",
     "autoplay":true,
-    "kiosk":true,
+    "kiosk":false,
     "hw_acceleration":true,
     "dev_tools":true,
     "width":1366,
     "height":768,
-    "title":"Youtube"
+    "title":"sysoul"
 }
