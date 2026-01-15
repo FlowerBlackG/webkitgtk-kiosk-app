@@ -1,7 +1,6 @@
 #include "kbrowser.h"
 #include <gtkmm/application.h>
 #include <webkit2/webkit2.h>
-#include "json.hpp"
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -9,7 +8,16 @@
 #define PROGRAM_NAME "kbrowser"
 #define AUTHORS proper_name("Nikhil Adiga")
 
-using json = nlohmann::json;
+
+static struct {
+    const char* title = "fyt A+";
+    const char* url = "https://www.baidu.com/";
+    bool dev_tool = true;
+    bool fullscreen = false;
+    int width = 1366;
+    int height = 768;
+} const config;
+
 
 extern WebKitWebView *web_view;
 
@@ -19,50 +27,48 @@ int main(int argc, char *argv[])
 
     KBrowser kbrowser;
 
-    json config;
-    std::ifstream ifs("settings.json");
-    config = json::parse(ifs);
-
     //Fullscreen
-    if (config["kiosk"])
+    if (config.fullscreen)
     {
         kbrowser.fullscreen();
     }
     else
     {
-        std::string title = config["title"];
+        std::string title = config.title;
 
-        kbrowser.set_default_size(config["width"], config["height"]);
+        kbrowser.set_default_size(config.width, config.height);
         kbrowser.set_title(title);
     }
 
-    //Audio Autoplay
-    if (config["autoplay"])
-    {
-        WebKitAutoplayPolicy autoplay = WEBKIT_AUTOPLAY_ALLOW;
-        WebKitWebsitePolicies *wp = webkit_website_policies_new_with_policies("autoplay", autoplay, NULL);
-        web_view = WEBKIT_WEB_VIEW(g_object_new(WEBKIT_TYPE_WEB_VIEW, "website-policies", wp, webkit_web_view_new()));
-    }
-    else
-    {
-        web_view = WEBKIT_WEB_VIEW(webkit_web_view_new());
-    }
-
-    //Hardware acceleration
-    if (config["hw_acceleration"])
-    {
-        WebKitSettings *hwsettings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(web_view));
-        g_object_set(G_OBJECT(hwsettings), "enable-webgl", TRUE, NULL);
-    }
+    
+    
+    WebKitAutoplayPolicy autoplay = WEBKIT_AUTOPLAY_ALLOW;
+    WebKitWebsitePolicies *wp = webkit_website_policies_new_with_policies("autoplay", autoplay, NULL);
+    web_view = WEBKIT_WEB_VIEW(g_object_new(WEBKIT_TYPE_WEB_VIEW, "website-policies", wp, webkit_web_view_new()));
+    
+    
 
     //Developer tools
-    if (config["dev_tools"])
+    if (config.dev_tool)
     {
         WebKitSettings *dtsettings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(web_view));
         g_object_set(G_OBJECT(dtsettings), "enable-developer-extras", TRUE, NULL);
     }
 
-    std::string url = config["url"];
+
+    // Other settings.
+    {
+        WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(web_view));
+        webkit_settings_set_enable_javascript(settings, TRUE);
+
+        // disable any hardware acceleration.
+        webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
+        webkit_settings_set_enable_2d_canvas_acceleration(settings, FALSE);
+    }
+
+
+
+    std::string url = config.url;
 
     Gtk::Widget *three = Glib::wrap(GTK_WIDGET(web_view));
 
