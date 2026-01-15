@@ -16,3 +16,7 @@ kbrowser: $(OBJECTS)
 
 clean: 
 	rm -rf $(OBJECTS) $(PROGRAM) 
+
+
+run: kbrowser
+	./$(PROGRAM)
